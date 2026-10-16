@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { defaultData } from './data.js';
 import { fetchWikiThumb, resolveWiki } from './wiki.js';
 import * as api from './api.js';
+import { ACCEPT, uploadFoto, validateFoto } from './upload.js';
+import './theme.css';
 
 const PAGE = 24;
 const PH = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400"><rect width="640" height="400" fill="#EEF2EF"/><text x="320" y="210" font-family="sans-serif" font-size="22" fill="#6B7280" text-anchor="middle">Foto tidak tersedia</text></svg>');
@@ -41,15 +43,39 @@ function Err({ msg }) { return msg ? <p className="form-error" role="alert">{msg
 // ---------- Form spesimen ----------
 function SpeciesForm({ init, onSaved, onClose, notify }) {
   const [f, setF] = useState({ nama: '', nama_latin: '', kategori: 'hewan', status: 'Dilindungi', habitat: '', gambar: '', deskripsi: '', ...init });
-  const [err, setErr] = useState(''); const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState(''); const [busy, setBusy] = useState(false); const [stage, setStage] = useState('');
+  const [file, setFile] = useState(null);                                   // foto yang dipilih dari perangkat
+  const [preview, setPreview] = useState(isHttps(init?.gambar) ? init.gambar : '');
+  const [drag, setDrag] = useState(false);
+  const [useLink, setUseLink] = useState(false);
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
+
+  useEffect(() => () => { if (preview.startsWith('blob:')) URL.revokeObjectURL(preview); }, [preview]);
+
+  const pick = (fl) => {
+    if (!fl) return;
+    const bad = validateFoto(fl); if (bad) return setErr(bad);
+    setErr(''); setFile(fl); setPreview(URL.createObjectURL(fl)); setF((s) => ({ ...s, gambar: '' }));
+  };
+  const clearFoto = () => { setFile(null); setPreview(''); setF((s) => ({ ...s, gambar: '' })); };
+  const onLink = (e) => { const v = e.target.value; setFile(null); setF((s) => ({ ...s, gambar: v })); setPreview(isHttps(v.trim()) ? v.trim() : ''); };
+  const onDrop = (e) => { e.preventDefault(); setDrag(false); pick(e.dataTransfer.files?.[0]); };
+
   const submit = async (e) => {
     e.preventDefault();
     const p = { nama: f.nama.trim(), nama_latin: f.nama_latin.trim(), kategori: f.kategori, status: f.status, habitat: f.habitat.trim(), gambar: f.gambar.trim(), deskripsi: f.deskripsi.trim() };
-    if (p.gambar && !isHttps(p.gambar)) return setErr('URL gambar harus diawali https://');
+    if (!file && p.gambar && !isHttps(p.gambar)) return setErr('Link gambar harus diawali https://');
     setBusy(true); setErr('');
-    try { await api.saveSpesies(p, init?.id); notify(init?.id ? 'Data spesies berhasil diperbarui!' : 'Spesies baru berhasil ditambahkan!'); onSaved(); }
-    catch (x) { setErr(x.message); } finally { setBusy(false); }
+    try {
+      if (file) {
+        setStage('Mengunggah foto...');
+        p.gambar = await uploadFoto(file);
+        setFile(null); setPreview(p.gambar); setF((s) => ({ ...s, gambar: p.gambar })); // jika simpan gagal, foto tidak diunggah ulang
+      }
+      setStage('Menyimpan...');
+      await api.saveSpesies(p, init?.id);
+      notify(init?.id ? 'Data spesies berhasil diperbarui!' : 'Spesies baru berhasil ditambahkan!'); onSaved();
+    } catch (x) { setErr(x.message); } finally { setBusy(false); setStage(''); }
   };
   return (<>
     <button className="modal-close" type="button" aria-label="Tutup" onClick={onClose}>&times;</button>
@@ -70,15 +96,38 @@ function SpeciesForm({ init, onSaved, onClose, notify }) {
           <select value={f.status} onChange={set('status')}>{STATUS.map((s) => <option key={s}>{s}</option>)}</select></div>
       </div>
       <div className="field"><label>Habitat &amp; Wilayah Sebaran</label><input value={f.habitat} onChange={set('habitat')} maxLength={150} required /></div>
-      <div className="field"><label>URL Gambar (HTTPS, opsional)</label><input type="url" value={f.gambar} onChange={set('gambar')} maxLength={500} placeholder="https://upload.wikimedia.org/..." /></div>
+
+      <div className="field"><label>Foto Spesimen <span className="opt">(opsional)</span></label>
+        {preview ? (
+          <div className="upload-preview">
+            <img src={preview} alt="Pratinjau foto spesimen" />
+            <div className="upload-actions">
+              <label className="btn-mini">Ganti foto<input className="sr-file" type="file" accept={ACCEPT} onChange={(e) => { pick(e.target.files[0]); e.target.value = ''; }} /></label>
+              <button type="button" className="btn-mini danger" onClick={clearFoto}>Hapus</button>
+            </div>
+          </div>
+        ) : (
+          <label className={'uploader' + (drag ? ' drag' : '')} onDragOver={(e) => { e.preventDefault(); setDrag(true); }} onDragLeave={() => setDrag(false)} onDrop={onDrop}>
+            <input className="sr-file" type="file" accept={ACCEPT} onChange={(e) => { pick(e.target.files[0]); e.target.value = ''; }} />
+            <span className="uploader-icon" aria-hidden="true">📷</span>
+            <strong>Pilih foto dari perangkat</strong>
+            <small>Dari galeri atau kamera · JPG, PNG, WebP · maks. 10 MB</small>
+          </label>
+        )}
+        <button type="button" className="link-toggle" onClick={() => setUseLink(!useLink)}>{useLink ? 'Sembunyikan link gambar' : 'Atau pakai link gambar'}</button>
+        {useLink && <input type="url" value={f.gambar} onChange={onLink} maxLength={500} placeholder="https://upload.wikimedia.org/..." aria-label="Link gambar (HTTPS)" />}
+        <small className="upload-note">Kosongkan jika ingin memakai foto otomatis dari Wikipedia.</small>
+      </div>
+
       <div className="field"><label>Ringkasan Informasi</label><textarea rows={3} value={f.deskripsi} onChange={set('deskripsi')} maxLength={2000} required /></div>
       <Err msg={err} />
-      <button className="btn-submit" disabled={busy}>Simpan Spesimen</button>
+      <button className="btn-submit" disabled={busy}>{busy ? stage || 'Memproses...' : 'Simpan Spesimen'}</button>
     </form>
   </>);
 }
 
 // ---------- Masuk / daftar ----------
+const friendlyAuthError = (m = '') => (/not confirmed|belum.*konfirmasi/i.test(m) ? 'Email Anda belum dikonfirmasi. Buka kotak masuk email Anda dan klik tautan konfirmasinya.' : m);
 const score = (p) => Math.min([p.length >= 8, p.length >= 12, /[a-z]/.test(p) && /[A-Z]/.test(p), /\d/.test(p), /[^A-Za-z0-9]/.test(p)].filter(Boolean).length, 4);
 function PwInput({ value, onChange, ...rest }) {
   const [show, setShow] = useState(false);
@@ -88,19 +137,30 @@ function PwInput({ value, onChange, ...rest }) {
 function AuthModalBody({ initialTab, onClose, notify }) {
   const [tab, setTab] = useState(initialTab);
   const [f, setF] = useState({ email: '', password: '', nama_lengkap: '', username: '' });
-  const [err, setErr] = useState(''); const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState(''); const [busy, setBusy] = useState(false); const [info, setInfo] = useState('');
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const run = (fn) => async (e) => {
     e.preventDefault(); setBusy(true); setErr('');
-    try { await fn(); } catch (x) { setErr(x.message); } finally { setBusy(false); }
+    try { await fn(); } catch (x) { setErr(friendlyAuthError(x.message)); } finally { setBusy(false); }
   };
   const doLogin = run(async () => { await api.login(f.email.trim(), f.password); notify('Berhasil masuk.'); onClose(); });
   const doReg = run(async () => {
     const instan = await api.register({ ...f, email: f.email.trim() });
-    notify(instan ? 'Akun berhasil dibuat.' : 'Akun dibuat. Cek email untuk konfirmasi, lalu masuk.'); onClose();
+    if (instan) { notify('Akun berhasil dibuat.'); onClose(); }
+    else setInfo('Email konfirmasi login sudah dikirim, coba cek kotak masuk email Anda.');
   });
   const sc = f.password ? score(f.password) : 0;
   const labels = ['Terlalu lemah', 'Lemah', 'Cukup', 'Kuat', 'Sangat kuat']; const colors = ['#DC2626', '#DC2626', '#F59E0B', '#65A30D', '#16A34A'];
+  if (info) return (<>
+    <button className="modal-close" type="button" aria-label="Tutup" onClick={onClose}>&times;</button>
+    <div className="auth-success" role="status">
+      <div className="check" aria-hidden="true">✉️</div>
+      <h3>Cek Email Anda</h3>
+      <p>{info}</p>
+      <small className="pw-hint">Belum terlihat? Periksa juga folder spam atau promosi.</small>
+      <button type="button" className="btn-submit" onClick={onClose}>Mengerti</button>
+    </div>
+  </>);
   return (<>
     <button className="modal-close" type="button" aria-label="Tutup" onClick={onClose}>&times;</button>
     <div className="auth-tabs">
@@ -206,6 +266,7 @@ export default function App() {
 
     <main className="main-content">
       <section className="hero-section">
+        <div className="hero-bg" aria-hidden="true"><i /><i />{[0, 1, 2, 3, 4, 5].map((n) => <span key={n} className={'leaf l' + n} />)}</div>
         <h1>Jelajah Keanekaragaman Hayati Nusantara</h1>
         <p>Dokumentasi flora, fauna, jamur, dan mikroba Indonesia yang terhubung langsung dengan referensi pengetahuan terbuka.</p>
         <div className="search-bar-container">

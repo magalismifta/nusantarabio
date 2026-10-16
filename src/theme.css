@@ -1,0 +1,221 @@
+/* NusantaraBio — tema "Hutan Hujan Nusantara"
+   File tambahan: style.css lama TIDAK diubah. Selector diberi awalan `body`
+   agar selalu menang atas style.css, berapa pun urutan impornya. */
+
+:root {
+    --canopy: #17331F;
+    --canopy-2: #1F4430;
+    --moss: #3F6B4B;
+    --sage: #E4EEE7;
+    --mist: #F3F7F4;
+    --gold: #D4A359;
+    --gold-soft: #F6E9CF;
+    --cream: #F6F1E4;
+    --ease: cubic-bezier(.22, .8, .3, 1);
+    --shadow-soft: 0 1px 2px rgba(23, 51, 31, .05), 0 8px 24px rgba(23, 51, 31, .07);
+    --shadow-lift: 0 2px 4px rgba(23, 51, 31, .06), 0 20px 44px rgba(23, 51, 31, .16);
+}
+
+/* ---------- Keyframes ---------- */
+@keyframes nb-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes nb-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes nb-modal { from { opacity: 0; transform: translateY(14px) scale(.96); } to { opacity: 1; transform: none; } }
+@keyframes nb-sheet { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes nb-pop { 0% { transform: scale(.5); opacity: 0; } 70% { transform: scale(1.08); } 100% { transform: scale(1); opacity: 1; } }
+@keyframes nb-sway { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(8deg); } }
+@keyframes nb-shimmer { 0% { background-position: 120% 0; } 100% { background-position: -120% 0; } }
+@keyframes nb-drift { from { transform: translate(0, 0) scale(1); } to { transform: translate(40px, 24px) scale(1.12); } }
+@keyframes nb-leaf {
+    0%, 100% { transform: translate3d(0, 0, 0) rotate(var(--r)); }
+    50% { transform: translate3d(var(--dx), -22px, 0) rotate(calc(var(--r) + 16deg)); }
+}
+
+/* ---------- Halaman ---------- */
+html body {
+    background:
+        radial-gradient(900px 420px at 100% -8%, rgba(212, 163, 89, .10), transparent 65%),
+        radial-gradient(800px 460px at -8% 12%, rgba(63, 107, 75, .09), transparent 65%),
+        var(--bg-page);
+    background-attachment: fixed;
+}
+
+/* ---------- Navbar ---------- */
+body .navbar { background: rgba(255, 255, 255, .82); backdrop-filter: blur(14px) saturate(1.4); -webkit-backdrop-filter: blur(14px) saturate(1.4); border-bottom-color: rgba(23, 51, 31, .08); }
+body .brand-logo { display: inline-block; transform-origin: 50% 90%; animation: nb-sway 5s ease-in-out infinite; }
+body .brand-text .title { letter-spacing: -.01em; }
+body .btn-nav { background: var(--sage); transition: background .25s, transform .25s var(--ease), box-shadow .25s; }
+body .btn-nav:hover { background: #D5E5DA; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(23, 51, 31, .12); }
+body .btn-login, body .btn-register { transition: transform .25s var(--ease), box-shadow .25s, background .25s; }
+body .btn-login:hover { background: var(--mist); }
+body .btn-register { background: var(--canopy); }
+body .btn-register:hover { background: var(--moss); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(23, 51, 31, .22); }
+body .btn-logout { transition: opacity .2s; }
+body .btn-logout:hover { opacity: .7; }
+
+/* ---------- Hero: kanopi hutan ---------- */
+body .hero-section {
+    position: relative; isolation: isolate; overflow: hidden;
+    max-width: none; margin: 0 0 clamp(28px, 5vw, 44px);
+    padding: clamp(40px, 8vw, 84px) clamp(18px, 5vw, 48px);
+    border-radius: 28px;
+    background: linear-gradient(165deg, var(--canopy) 0%, var(--canopy-2) 58%, #2B5A3F 100%);
+    box-shadow: 0 24px 60px rgba(23, 51, 31, .22);
+    animation: nb-fade .8s ease both;
+}
+body .hero-section > :not(.hero-bg) { position: relative; z-index: 1; max-width: 720px; margin-left: auto; margin-right: auto; }
+body .hero-section h1 { color: var(--cream); font-size: clamp(1.7rem, 5.6vw, 2.9rem); letter-spacing: -.015em; text-wrap: balance; animation: nb-rise .9s var(--ease) .15s both; }
+body .hero-section p { color: rgba(246, 241, 228, .78); max-width: 560px; text-wrap: pretty; animation: nb-rise .9s var(--ease) .3s both; }
+body .search-bar-container { animation: nb-rise .9s var(--ease) .45s both; }
+
+body .hero-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+body .hero-bg i { position: absolute; border-radius: 50%; filter: blur(56px); animation: nb-drift 16s ease-in-out infinite alternate; }
+body .hero-bg i:nth-child(1) { width: 320px; height: 320px; left: -80px; top: -90px; background: rgba(111, 162, 127, .38); }
+body .hero-bg i:nth-child(2) { width: 280px; height: 280px; right: -60px; bottom: -100px; background: rgba(212, 163, 89, .34); animation-delay: -6s; animation-direction: alternate-reverse; }
+
+body .hero-bg .leaf {
+    position: absolute; left: var(--x); top: var(--y); width: var(--s); height: var(--s);
+    border-radius: 0 100% 0 100%;
+    background: linear-gradient(135deg, rgba(150, 200, 165, .55), rgba(63, 107, 75, .35));
+    transform: rotate(var(--r));
+    animation: nb-leaf var(--d) ease-in-out infinite;
+    animation-delay: var(--delay, 0s);
+}
+body .hero-bg .leaf::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, transparent 48.5%, rgba(255, 255, 255, .3) 49.5%, rgba(255, 255, 255, .3) 50.5%, transparent 51.5%); border-radius: inherit; }
+body .hero-bg .l0 { --x: 6%;  --y: 14%; --s: 54px; --r: 20deg;  --d: 9s;  --dx: 14px; }
+body .hero-bg .l1 { --x: 88%; --y: 12%; --s: 40px; --r: 110deg; --d: 11s; --dx: -16px; --delay: -3s; }
+body .hero-bg .l2 { --x: 17%; --y: 70%; --s: 34px; --r: -30deg; --d: 10s; --dx: 12px; --delay: -5s; }
+body .hero-bg .l3 { --x: 80%; --y: 66%; --s: 62px; --r: 70deg;  --d: 13s; --dx: -20px; --delay: -2s; }
+body .hero-bg .l4 { --x: 48%; --y: 6%;  --s: 26px; --r: 150deg; --d: 8s;  --dx: 10px; --delay: -4s; }
+body .hero-bg .l5 { --x: 62%; --y: 84%; --s: 30px; --r: -80deg; --d: 12s; --dx: -12px; --delay: -7s; }
+
+body .search-input-wrap { background: #fff; border: 1px solid transparent; box-shadow: 0 10px 30px rgba(0, 0, 0, .2); transition: box-shadow .3s, transform .3s var(--ease); }
+body .search-input-wrap:focus-within { border-color: var(--gold); box-shadow: 0 0 0 4px rgba(212, 163, 89, .35), 0 12px 34px rgba(0, 0, 0, .25); transform: translateY(-1px); }
+body .search-input-wrap input { color: var(--text-main); }
+
+body .pill { background: rgba(255, 255, 255, .1); border: 1px solid rgba(255, 255, 255, .22); color: var(--cream); transition: background .25s, color .25s, transform .25s var(--ease), border-color .25s; }
+body .pill:hover { background: rgba(255, 255, 255, .2); transform: translateY(-2px); }
+body .pill:active { transform: scale(.96); }
+body .pill.active { background: var(--gold); border-color: var(--gold); color: var(--canopy); font-weight: 700; }
+
+/* ---------- Katalog ---------- */
+body .catalog-header { color: var(--text-muted); }
+body .conn-badge { background: var(--gold-soft); color: #7A5415; }
+
+body .card {
+    border-radius: 18px; border-color: rgba(23, 51, 31, .08); box-shadow: var(--shadow-soft);
+    transition: transform .4s var(--ease), box-shadow .4s var(--ease), border-color .4s;
+    animation: nb-rise .6s var(--ease) both;
+}
+body .card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lift); border-color: rgba(212, 163, 89, .55); }
+body .card:active { transform: scale(.985); }
+body .species-grid .card:nth-child(6n + 2) { animation-delay: .06s; }
+body .species-grid .card:nth-child(6n + 3) { animation-delay: .12s; }
+body .species-grid .card:nth-child(6n + 4) { animation-delay: .18s; }
+body .species-grid .card:nth-child(6n + 5) { animation-delay: .24s; }
+body .species-grid .card:nth-child(6n + 6) { animation-delay: .30s; }
+
+body .card-img { background: linear-gradient(100deg, #E8EFEA 30%, #F5F8F6 50%, #E8EFEA 70%); background-size: 240% 100%; animation: nb-shimmer 1.6s linear infinite; transition: transform .9s var(--ease); }
+body .card:hover .card-img { transform: scale(1.06); }
+body .card-content { padding: 18px; position: relative; background: #fff; }
+body .card-tag { align-self: flex-start; background: var(--sage); color: var(--moss); padding: 3px 10px; border-radius: 999px; text-transform: capitalize; letter-spacing: 0; font-size: .72rem; margin-bottom: 10px; }
+body .card-title { letter-spacing: -.01em; color: var(--canopy); }
+body .card-footer { border-top-color: rgba(23, 51, 31, .08); color: var(--text-muted); }
+body .status-pill { background: var(--gold-soft); color: #7A5415; }
+body .status-kritis { background: #FEE2E2; color: #991B1B; }
+body .status-terancam-punah { background: #FFEDD5; color: #9A3412; }
+body .status-risiko-rendah { background: #DCFCE7; color: #166534; }
+body .status-belum-dievaluasi { background: #E5E7EB; color: #374151; }
+
+/* ---------- Tombol umum ---------- */
+body .btn-submit { background: linear-gradient(135deg, var(--canopy), var(--moss)); border-radius: 10px; padding: 13px; transition: transform .25s var(--ease), box-shadow .25s, filter .25s; }
+body .btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(23, 51, 31, .28); filter: brightness(1.06); }
+body .btn-submit:active:not(:disabled) { transform: scale(.98); }
+body .btn-secondary, body .btn-danger, body .btn-wiki, body .wr-actions button { transition: transform .25s var(--ease), background .25s, box-shadow .25s; }
+body .btn-secondary:hover { background: var(--mist); transform: translateY(-1px); }
+body .btn-danger:hover { background: #FEF2F2; transform: translateY(-1px); }
+body .btn-wiki { border-radius: 10px; }
+body .btn-wiki:hover { background: #DBEAFE; transform: translateY(-1px); }
+body .wr-actions button:hover { background: var(--mist); transform: translateY(-1px); }
+body .wr-card { border-radius: 16px; border-color: rgba(23, 51, 31, .08); box-shadow: var(--shadow-soft); animation: nb-rise .5s var(--ease) both; }
+
+/* ---------- Modal ---------- */
+body .modal-overlay { background: rgba(10, 26, 16, .58); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+body .modal-overlay.active { animation: nb-fade .25s ease both; }
+body .modal-overlay.active .modal-card { animation: nb-modal .42s var(--ease) both; }
+body .modal-card { border-radius: 24px; box-shadow: 0 30px 80px rgba(10, 25, 16, .38); }
+
+/* Tombol tutup: latar putih agak transparan agar selalu terlihat di atas foto maupun kartu putih */
+body .modal-close, body .modal-close-light {
+    position: absolute; top: 12px; right: 12px; z-index: 10;
+    width: 38px; height: 38px; display: grid; place-items: center;
+    border-radius: 50%; border: 1px solid rgba(0, 0, 0, .06);
+    background: rgba(255, 255, 255, .85); color: #1F2421;
+    font-size: 1.5rem; line-height: 1; padding: 0 0 2px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, .2);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    transition: transform .3s var(--ease), background .2s, box-shadow .2s;
+}
+body .modal-close:hover, body .modal-close-light:hover { background: #fff; transform: rotate(90deg) scale(1.06); box-shadow: 0 4px 14px rgba(0, 0, 0, .28); }
+body .modal-close:active, body .modal-close-light:active { transform: scale(.92); }
+body .wiki-header .modal-close-light { position: static; background: rgba(255, 255, 255, .88); color: var(--canopy); }
+body .wiki-header { background: var(--canopy); }
+
+body .modal-img-wrap img { border-radius: 16px; }
+body .info-grid { background: var(--mist); border-radius: 12px; }
+body .badge-type { color: var(--moss); }
+body .modal-info h2 { color: var(--canopy); }
+
+/* ---------- Form, upload foto, auth ---------- */
+body .field input, body .field select, body .field textarea { border-radius: 10px; border-color: rgba(23, 51, 31, .16); transition: border-color .2s, box-shadow .2s; }
+body .field input:focus, body .field select:focus, body .field textarea:focus { border-color: var(--moss); box-shadow: 0 0 0 4px rgba(63, 107, 75, .16); }
+body .opt { font-weight: 400; color: var(--text-muted); }
+
+body .uploader {
+    position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center;
+    padding: 22px 16px; border: 1.5px dashed rgba(63, 107, 75, .5); border-radius: 14px; background: var(--mist);
+    cursor: pointer; transition: background .25s, border-color .25s, transform .25s var(--ease);
+}
+body .uploader:hover, body .uploader.drag { background: var(--sage); border-color: var(--moss); }
+body .uploader.drag { transform: scale(1.015); }
+body .uploader:focus-within { outline: 3px solid var(--gold); outline-offset: 2px; }
+body .uploader strong { font-size: .92rem; color: var(--canopy); }
+body .uploader small { color: var(--text-muted); font-size: .76rem; }
+body .uploader-icon { font-size: 1.7rem; transition: transform .3s var(--ease); }
+body .uploader:hover .uploader-icon { transform: translateY(-3px) scale(1.08); }
+body .sr-file { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; pointer-events: none; }
+
+body .upload-preview { position: relative; border-radius: 14px; overflow: hidden; aspect-ratio: 16 / 9; background: #EEF2EF; animation: nb-pop .4s var(--ease) both; }
+body .upload-preview img { width: 100%; height: 100%; object-fit: cover; }
+body .upload-actions { position: absolute; left: 10px; bottom: 10px; display: flex; gap: 8px; }
+body .btn-mini { position: relative; display: inline-flex; align-items: center; padding: 6px 14px; border-radius: 999px; border: none; background: rgba(255, 255, 255, .9); color: var(--canopy); font-size: .8rem; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0, 0, 0, .2); transition: transform .2s var(--ease), background .2s; }
+body .btn-mini:hover { background: #fff; transform: translateY(-1px); }
+body .btn-mini.danger { color: var(--danger); }
+body .btn-mini:focus-within { outline: 3px solid var(--gold); outline-offset: 2px; }
+body .link-toggle { align-self: flex-start; background: none; border: none; padding: 2px 0; color: var(--moss); font-size: .8rem; text-decoration: underline; text-underline-offset: 3px; }
+body .upload-note { color: var(--text-muted); font-size: .75rem; }
+
+body .auth-card h3 { font-family: 'Lora', serif; color: var(--canopy); }
+body .auth-success { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; padding: 14px 0 4px; }
+body .auth-success .check { width: 68px; height: 68px; border-radius: 50%; display: grid; place-items: center; font-size: 1.9rem; background: var(--sage); animation: nb-pop .55s var(--ease) both; }
+body .auth-success p { color: var(--text-main); max-width: 340px; }
+body .auth-success .btn-submit { width: 100%; margin-top: 8px; }
+body .auth-tab { transition: color .2s, border-color .2s; }
+body .form-error { border-radius: 10px; animation: nb-rise .3s var(--ease) both; }
+
+/* ---------- Toast & footer ---------- */
+body .toast { background: var(--canopy); box-shadow: 0 10px 30px rgba(0, 0, 0, .28); }
+body .footer { border-top-color: rgba(23, 51, 31, .1); }
+
+/* ---------- Ponsel ---------- */
+@media (max-width: 640px) {
+    body .hero-section { border-radius: 22px; }
+    body .modal-overlay.active .modal-card { animation: nb-sheet .45s var(--ease) both; }
+    body .modal-card { border-radius: 24px 24px 0 0; }
+    body .info-grid { grid-template-columns: 1fr; }
+    body .hero-bg .l3 { --s: 44px; }
+}
+
+/* ---------- Hormati preferensi pengguna ---------- */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+}
