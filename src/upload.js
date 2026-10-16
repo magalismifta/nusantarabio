@@ -9,6 +9,7 @@ export const BUCKET = 'spesimen';
 export const ACCEPT = 'image/jpeg,image/png,image/webp';
 const MAX_INPUT = 10 * 1024 * 1024; // 10 MB sebelum dikompres
 const MAX_SIDE = 1600;
+const MAX_BUCKET = 5 * 1024 * 1024; // batas bucket di storage.sql
 
 export function validateFoto(file) {
   if (!file) return 'Pilih foto terlebih dahulu.';
@@ -17,16 +18,25 @@ export function validateFoto(file) {
   return '';
 }
 
+const BACA_GAGAL = 'Foto tidak bisa dibaca. Coba foto lain.';
+
 async function decode(file) {
   if (typeof createImageBitmap === 'function') {
-    try { return await createImageBitmap(file, { imageOrientation: 'from-image' }); } catch { /* lanjut ke cara lama */ }
+    try { return await createImageBitmap(file, { imageOrientation: 'from-image' }); } catch { /* coba cara berikutnya */ }
+    try { return await createImageBitmap(file); } catch { /* coba cara berikutnya */ }
   }
+  // Cadangan: baca lewat data URL (lebih tahan di sebagian browser ponsel)
+  const dataUrl = await new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = () => rej(new Error(BACA_GAGAL));
+    r.readAsDataURL(file);
+  });
   return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
     const img = new Image();
-    img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
-    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Foto tidak bisa dibaca. Coba foto lain.')); };
-    img.src = url;
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error(BACA_GAGAL));
+    img.src = dataUrl;
   });
 }
 
@@ -65,8 +75,13 @@ export async function uploadFoto(file) {
   const uid = auth && auth.user && auth.user.id;
   if (!uid) throw new Error('Masuk dulu untuk mengunggah foto.');
 
-  const blob = await compress(file);
-  const ext = blob.type === 'image/webp' ? 'webp' : 'jpg';
+  let blob;
+  try { blob = await compress(file); }
+  catch (e) {
+    if (file.size <= MAX_BUCKET) blob = file; // kompres gagal: pakai foto asli
+    else throw new Error('Foto terlalu besar dan tidak bisa dikecilkan di perangkat ini. Pilih foto yang lebih kecil (di bawah 5 MB).');
+  }
+  const ext = { 'image/webp': 'webp', 'image/png': 'png' }[blob.type] || 'jpg';
   const rand = Math.random().toString(36).slice(2, 8);
   const path = `${uid}/${Date.now()}-${rand}.${ext}`;
 
