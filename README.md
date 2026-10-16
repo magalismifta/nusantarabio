@@ -1,6 +1,6 @@
 # NusantaraBio (Vite + React + Supabase)
 
-Ensiklopedia flora & fauna Indonesia. Frontend React, backend Supabase (database + login), hosting GitHub Pages. Tanpa PHP.
+Ensiklopedia Ragam Hayati diIndonesia. Frontend React, backend Supabase (database + login), hosting GitHub Pages. Tanpa PHP.
 
 ## Menjalankan lokal
 ```
