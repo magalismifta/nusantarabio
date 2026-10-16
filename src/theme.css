@@ -219,3 +219,10 @@ body .footer { border-top-color: rgba(23, 51, 31, .1); }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ---------- Habitat panjang: potong 2 baris di kartu (teks lengkap tetap ada di detail) ---------- */
+body .card-footer { align-items: flex-start; }
+body .card-footer > span:first-child {
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2;
+    overflow: hidden; overflow-wrap: break-word; line-height: 1.45;
+}
