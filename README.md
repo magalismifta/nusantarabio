@@ -6,7 +6,7 @@
 |---|---|
 | 🔗 **Link deploy** | **https://nusantarabio.vercel.app/** |
 | 📦 **Repositori** | https://github.com/magalismifta/nusantarabio |
-| 🧑‍💻 **Pembuat** | _(isi nama)_ · NIM _(isi NIM)_ · Kelas _(isi kelas)_ |
+| 🧑‍💻 **Pembuat** | _(Magalis Mifta Khuddin Firmansyah)_ · NIM _(60225042)_ · Kelas _(Pemrograman Web-D)_ |
 | 📚 **Keterangan** | UTS Pemrograman Website, tugas individu |
 
 ## Daftar isi
