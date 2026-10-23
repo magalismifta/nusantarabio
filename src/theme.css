@@ -226,3 +226,41 @@ body .card-footer > span:first-child {
     display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2;
     overflow: hidden; overflow-wrap: break-word; line-height: 1.45;
 }
+
+/* ---------- Foto belum termuat: kilau "percikan" lembut, lalu foto muncul perlahan ---------- */
+@keyframes nb-imgin { from { opacity: 0; } to { opacity: 1; } }
+@keyframes nb-sweep {
+    from { background-position: 18% 28%, 74% 22%, 46% 64%, 86% 72%, 26% 82%, 120% 0; }
+    to   { background-position: 18% 28%, 74% 22%, 46% 64%, 86% 72%, 26% 82%, -120% 0; }
+}
+@keyframes nb-twinkle {
+    0%, 100% { background-size: 0 0, 0 0, 0 0, 0 0, 0 0, 240% 100%; }
+    10% { background-size: 26px 26px, 0 0, 0 0, 0 0, 0 0, 240% 100%; }
+    20% { background-size: 0 0, 0 0, 0 0, 0 0, 0 0, 240% 100%; }
+    30% { background-size: 0 0, 20px 20px, 0 0, 0 0, 0 0, 240% 100%; }
+    40% { background-size: 0 0, 0 0, 0 0, 0 0, 0 0, 240% 100%; }
+    50% { background-size: 0 0, 0 0, 30px 30px, 0 0, 0 0, 240% 100%; }
+    60% { background-size: 0 0, 0 0, 0 0, 0 0, 0 0, 240% 100%; }
+    70% { background-size: 0 0, 0 0, 0 0, 22px 22px, 0 0, 240% 100%; }
+    80% { background-size: 0 0, 0 0, 0 0, 0 0, 0 0, 240% 100%; }
+    90% { background-size: 0 0, 0 0, 0 0, 0 0, 24px 24px, 240% 100%; }
+}
+
+body img.img-loading {
+    color: transparent; font-size: 0;            /* sembunyikan teks alt / ikon gambar rusak saat memuat */
+    background-color: #DCE8DF;
+    background-image:
+        radial-gradient(circle, #fff 0 16%, rgba(255, 255, 255, 0) 68%),
+        radial-gradient(circle, #F6E2B8 0 16%, rgba(246, 226, 184, 0) 68%),
+        radial-gradient(circle, #fff 0 16%, rgba(255, 255, 255, 0) 68%),
+        radial-gradient(circle, #F6E2B8 0 16%, rgba(246, 226, 184, 0) 68%),
+        radial-gradient(circle, #fff 0 16%, rgba(255, 255, 255, 0) 68%),
+        linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, .6) 50%, transparent 70%);
+    background-repeat: no-repeat;
+    background-position: 18% 28%, 74% 22%, 46% 64%, 86% 72%, 26% 82%, 120% 0;
+    background-size: 0 0, 0 0, 0 0, 0 0, 0 0, 240% 100%;
+    animation: nb-twinkle 2.8s ease-in-out infinite, nb-sweep 1.9s linear infinite;
+}
+body img.img-loaded { animation: nb-imgin .6s ease both; background: none; }
+body .card-img.img-loaded { animation: nb-imgin .6s ease both; background: none; }
+body .modal-img-wrap img.img-loading { min-height: 220px; }

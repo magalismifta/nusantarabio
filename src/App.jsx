@@ -16,6 +16,7 @@ const isHttps = (u) => /^https:\/\//i.test(u || '');
 function Img({ item, className }) {
   const ref = useRef(null);
   const [src, setSrc] = useState(isHttps(item.gambar) ? item.gambar : null);
+  const [okSrc, setOkSrc] = useState(null); // alamat foto yang sudah selesai dimuat
   useEffect(() => {
     if (isHttps(item.gambar)) { setSrc(item.gambar); return; }
     setSrc(null);
@@ -27,7 +28,9 @@ function Img({ item, className }) {
     return () => { off = true; io.disconnect(); };
   }, [item.gambar, item.nama_latin]); // eslint-disable-line
   const onError = () => { if (src !== PH) fetchWikiThumb(item).then((s) => setSrc(s && s !== src ? s : PH)); };
-  return <img ref={ref} className={className} alt={item.nama} src={src || undefined} loading="lazy" onError={onError} />;
+  const loaded = !!src && okSrc === src;
+  const cls = [className, loaded ? 'img-loaded' : 'img-loading'].filter(Boolean).join(' ');
+  return <img ref={ref} className={cls} alt={item.nama} src={src || undefined} loading="lazy" onLoad={(e) => setOkSrc(e.currentTarget.getAttribute('src'))} onError={onError} />;
 }
 
 function Modal({ open, onClose, className = '', children }) {
